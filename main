@@ -1,0 +1,80 @@
+import pygame
+import os
+from game import Game
+from Joueur import Player
+
+pygame.init()
+rep = os.getcwd()
+
+#generer la fenetre de jeu
+pygame.display.set_caption("Projet NSI")
+screen = pygame.display.set_mode((1080,720))
+
+#importation de l'arrière plan
+background = pygame.image.load(str(rep)+'\Image\fond.jpg')
+background = pygame.transform.scale(background,(1080,720))
+
+#charger le jeu
+game = Game()
+
+#charger le joueur
+
+player = Player
+
+running = True
+
+#boucle tant que la condition est vrai
+while running:
+    #appliquer l'arrière plan
+    screen.blit(background,(0,0))
+
+    #appliquer l'image de mon joueur
+    screen.blit(game.player.image,game.player.rect)
+
+    #actualiser barre de vie joueur
+    game.player.update_health_bar(screen)
+
+    #recuperer les projectiles du joueur
+    for projectile in game.player.all_projectiles:
+        projectile.move()
+
+    #recuperer les monstres de notre jeu
+    for monster in game.all_monsters:
+        monster.forward()
+        monster.update_health_bar()
+
+    #appliquer l'ensemble des image du groupe de projectiles
+    game.player.all_projectiles.draw(screen)
+
+    #appliquer l'ensemble des images de mon groupe de monstre
+    game.all_monsters.draw(screen)
+
+    #verifier si le joueur souhaite aller à gauche ou a droite
+    if game.pressed.get(pygame.K_RIGHT) and game.player.rect.x + game.player.rect.width < screen.get_width():
+        game.player.move_right()
+    elif game.pressed.get(pygame.K_LEFT) and game.player.rect.x > 0:
+        game.player.move_left()
+
+    print(game.player.rect.x)
+
+    #mettre à jour l'écran
+    pygame.display.flip()
+
+    #si le joueur ferme la fenetre
+    for event in pygame.event.get():
+        #que l'evenement est fermeture de fenetre
+        if event.type == pygame.QUIT:
+            running = False
+            pygame.quit()
+            print("Bye")
+        #detecter si un joueur lache une touche du clavier
+        elif event.type == pygame.KEYDOWN:
+            #quelle touche est utilisée
+            game.pressed[event.key] = True
+
+            #detecter si la touche escape est utiliser
+            if event.key == pygame.K_SPACE:
+                game.player.launch_projectile()
+
+        elif event.type == pygame.KEYUP:
+            game.pressed[event.key] = False
